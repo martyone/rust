@@ -1,0 +1,39 @@
+From 9b3e1d1605c0a8905c9999e0dde6cf236bc104b1 Mon Sep 17 00:00:00 2001
+From: bjorn3 <bjorn3@users.noreply.github.com>
+Date: Sat, 7 Nov 2020 14:19:14 +0100
+Subject: [PATCH 08/10] Don't spawn a new thread for fresh jobs
+
+The overhead in doing so is often much higher than the actual time it
+takes to execute the job
+---
+ src/cargo/core/compiler/job_queue.rs | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/src/tools/cargo/src/cargo/core/compiler/job_queue.rs b/src/tools/cargo/src/cargo/core/compiler/job_queue.rs
+index ee19103b9..3662d65fd 100644
+--- a/src/tools/cargo/src/cargo/core/compiler/job_queue.rs
++++ b/src/tools/cargo/src/cargo/core/compiler/job_queue.rs
+@@ -853,10 +853,17 @@ impl<'a, 'cfg> DrainState<'a, 'cfg> {
+         };
+ 
+         match fresh {
+-            Freshness::Fresh => self.timings.add_fresh(),
+-            Freshness::Dirty => self.timings.add_dirty(),
++            Freshness::Fresh => {
++                self.timings.add_fresh();
++                // Running a fresh job on the same thread is often much faster than spawning a new
++                // thread to run the job.
++                doit();
++            }
++            Freshness::Dirty => {
++                self.timings.add_dirty();
++                scope.spawn(move |_| doit());
++            }
+         }
+-        scope.spawn(move |_| doit());
+ 
+         Ok(())
+     }
+-- 
+2.29.2
+

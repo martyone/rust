@@ -48,6 +48,12 @@ Patch2: 0002-Set-proper-llvm-targets.patch
 Patch3: 0003-Disable-statx-for-all-builds.-JB-50106.patch
 Patch4: 0004-Scratchbox2-needs-to-be-able-to-tell-rustc-the-defau.patch
 Patch5: 0005-Cargo-Force-the-target-when-building-for-CompileKind-Host.patch
+Patch6: 0006-Avoid-constructing-an-anyhow-Error-when-not-necessar.patch
+Patch7: 0007-Always-send-message-through-FinishOnDrop.patch
+Patch8: 0008-Don-t-spawn-a-new-thread-for-fresh-jobs.patch
+Patch9: 0009-HACK-Fix-deadlock-by-avoiding-backpressure-for-fresh.patch
+Patch10: 0010-Immediately-print-job-output-for-fresh-jobs.patch
+
 # This is the real rustc spec - the stub one appears near the end.
 %ifarch %ix86
 
@@ -224,6 +230,11 @@ test -f '%{local_rust_root}/bin/rustc'
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
+%patch10 -p1
 
 sed -i.try-py3 -e '/try python2.7/i try python3 "$@"' ./configure
 
